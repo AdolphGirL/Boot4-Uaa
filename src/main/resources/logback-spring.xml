@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<contextName>Boot4-uaa</contextName>
+	
+	<!-- 基本屬性 -->
+	<property name="LOG_HOME" value="logs" />
+	
+	<property name="PATTERN_PLAIN"
+		value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - occur at %L - %safeMsg%n" />
+	
+	<!-- 標準化 pattern: 用 [] 包裝欄位
+	[TS]	%d{yyyy-MM-dd HH:mm:ss.SSS}	Timestamp
+	[TH]	%thread	Thread
+	[LV]	%-5level	Log Level
+	[CL]	%logger{40}.%M	Class + Method
+	[LN]	%L	Line Number
+	[TR]	%X{traceId:-}/%X{spanId:-}	Trace ID / Span ID -->
+	<property name="PATTERN_FORMAT_PLAIN"
+		value="[TS] %d{yyyy-MM-dd HH:mm:ss.SSS} [TH] %thread [LV] %-5level [CL] %logger{40}.%M [LN] %L [TR] %X{traceId:-}/%X{spanId:-} - %safeMsg%n" />
+		
+	<property name="PATTERN_FORMAT_COLOR_PLAIN"
+		value="%yellow([TS] %d{yyyy-MM-dd HH:mm:ss.SSS}) [TH] %thread [LV] %-5level %highlight([CL] %logger{40}.%M) [LN] %L %green([TR] %X{traceId:-}/%X{spanId:-}) - %highlight(%safeMsg%n)" />
+		
+	<!-- XSS / Log Forging 防護 -->
+	<conversionRule conversionWord="safeMsg"
+		converterClass="com.kd.ci.shared.util.xss.LogParse" />
+		
+	<!-- CONSOLE -->
+	<appender name="CONSOLE"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${PATTERN_FORMAT_PLAIN}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- CONSOLE COLOR -->
+	<appender name="CONSOLE_COLOR"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${PATTERN_FORMAT_COLOR_PLAIN}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 一般檔案 (plain text, 可選) -->
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/all.log</file>
+
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/all.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>10MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>${PATTERN_FORMAT_PLAIN}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- Audit JSON 檔案 (給 Alloy 收集) -->
+	<appender name="AUDIT_JSON" 
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/audit.json.log</file>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/audit.json.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>90</maxHistory>
+		</rollingPolicy>
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder">
+			<includeMdc>true</includeMdc>			<!-- 帶 trace_id/span_id -->
+			<includeMarker>true</includeMarker>		<!-- 帶 marker 如 SUCCESS/FAIL -->
+			<customFields>{"app":"boot4-uaa", "type":"audit"}</customFields>
+			<fieldNames>
+				<timestamp>ts</timestamp>
+				<level>level</level>
+				<message>msg</message>
+				<thread>thread</thread>
+				<logger>logger</logger>
+			</fieldNames>
+		</encoder>
+	</appender>
+
+	<!-- ASYNC -->
+	<appender name="ASYNC_FILE"
+		class="ch.qos.logback.classic.AsyncAppender">
+		<queueSize>512</queueSize>
+		<discardingThreshold>0</discardingThreshold>
+		<appender-ref ref="FILE" />
+	</appender>
+	
+	<!-- SECURITY LOG，LOG有問題時的備用方案 -->
+	<appender name="SECURITY_APPENDER"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/security_log_xss_defense.log</file>
+
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_HOME}/security_log_xss_defense.%d{yyyy-MM-dd}.log
+			</fileNamePattern>
+			<maxHistory>90</maxHistory>
+		</rollingPolicy>
+		
+		<!-- 不使用 safeMsg，避免遞迴 -->
+		<encoder>
+			<pattern>[TS] %d{yyyy-MM-dd HH:mm:ss.SSS} [TH] %thread [LV] %-5level [CL] %logger{40}.%M [LN] %L [TR] %X{trace_id}/%X{span_id} - %msg%n"</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- 當log msg內有 sanitize，啟用 -->
+	<logger name="SECURITY_LOG" level="WARN" additivity="false">
+		<appender-ref ref="SECURITY_APPENDER" />
+	</logger>
+	
+	<!-- 開發階段使用，紀錄 spring security -->
+	<logger name="org.springframework.security" level="trace" additivity="false">
+		<appender-ref ref="CONSOLE" />
+	</logger>
+	
+	<!-- Audit logger: 只輸出到 JSON 檔案 -->
+	<logger name="audit" level="INFO" additivity="false">
+		<appender-ref ref="AUDIT_JSON" />
+	</logger>
+	
+	<!-- ROOT -->
+	<root level="INFO">
+		<appender-ref ref="CONSOLE_COLOR" />
+		<appender-ref ref="ASYNC_FILE" />
+	</root>
+	
+</configuration>

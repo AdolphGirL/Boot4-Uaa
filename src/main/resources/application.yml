@@ -1,0 +1,150 @@
+server:
+  port: 8090
+  http2:
+    enabled: true
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types:
+      - text/html
+      - text/xml
+      - text/plain
+      - text/css
+      - text/javascript
+      - application/javascript
+      - application/json
+      - application/xml
+#  需要時再開啟設定
+#  ssl:
+#    enabled: true
+  servlet:
+    context-path: /boot4-uaa
+    session:
+      tracking-modes:
+      - cookie
+      cookie:
+        http-only: true
+        # SSL 沒開啟，所以先設為 false，之後開啟 SSL 再改回 true；否則瀏覽器不會帶 cookie，導致 session 無法維持
+        secure: false
+        same-site: lax
+        max-age: 3600 # 60分鐘
+      timeout: PT60M
+spring:
+  application:
+    name: Boot4-uaa
+# request編碼移到此 
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    multipart:
+      max-file-size: 60MB          # 或保持 62914560 (bytes)，單一檔案上限
+      max-request-size: 100MB      # 整個請求上限，建議設更大一點
+      # 可選：檔案超過多少就寫到臨時檔（避免佔用記憶體）
+#      file-size-threshold: 2MB     # 超過 2MB 的檔案寫磁碟而非全放記憶體
+#      location: /tmp/uploads       # 自訂臨時目錄（預設系統 temp）
+  threads:
+    virtual:
+      enabled: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          oidc-client:
+            registration:
+              client-id: "oidc-client"
+              client-secret: "{noop}secret"
+              client-authentication-methods:
+                 - "client_secret_basic"
+              authorization-grant-types:
+                - "authorization_code"
+                - "refresh_token"
+              redirect-uris:
+                - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
+              post-logout-redirect-uris:
+                - "http://127.0.0.1:8080/"
+              scopes:
+                - "openid"
+                - "profile"
+            require-authorization-consent: true
+
+  datasource:
+    first:
+      driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      jdbcUrl: jdbc:sqlserver://172.16.52.76:1433;databasename=${boot4-uaa.db.first-name};encrypt=true;trustServerCertificate=true
+      username: kdtifsan
+      password: qwer1234
+      type: com.zaxxer.hikari.HikariDataSource
+#     default 10，先設定為cpu數*2 + 有效硬碟數
+      maxPoolSize: 5
+#     先使用預設 
+#      minIdle: 5
+#     mssql 2017，default 30，所以在此設定30 
+      connectionTimeout: 30000
+      idleTimeout: 600000
+      connectionTestQuery: SELECT 1
+      poolName: workflow-hikaricp-first
+      isAutoCommit: true
+#     多久檢查一次連接的存活性
+      keepaliveTime: 30000
+# 第二個資料庫，暫時不需要
+#    second:
+#      driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#      jdbcUrl: jdbc:sqlserver://172.16.52.76:1433;databasename=${boot4.db.second-name};encrypt=true;trustServerCertificate=true
+#      username: kdtifsan
+#      password: qwer1234
+#      type: com.zaxxer.hikari.HikariDataSource
+##     default 10，先設定為cpu數*2 + 有效硬碟數
+#      maxPoolSize: 3
+##     先使用預設 
+##      minIdle: 5
+##     mssql 2017，default 30，所以在此設定30 
+#      connectionTimeout: 30000
+#      idleTimeout: 600000
+#      connectionTestQuery: SELECT 1
+#      poolName: pmds-hikaricp-second
+#      isAutoCommit: true
+##     多久檢查一次連接的存活性
+#      keepaliveTime: 30000
+mybatis:
+# 其餘設定改為java端處理
+# map-underscore-to-camel-case，欄位名稱下滑線自動mapping到駝峰字的屬性
+  configuration:
+    map-underscore-to-camel-case: true
+
+boot4-uaa:
+  db:
+    first-name: TIFSAN_WORKFLOW
+    first-schema-name: dbo
+    second-name: PMDS
+    second-schema-name: dbo
+  frontend:
+#   倒數計時時間
+    count-backwards: 60
+#   session重新計算時間 - 盡量與timeout一致
+    reset-min: 60
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+---
+spring:
+  profiles:
+    active:
+    - dev
