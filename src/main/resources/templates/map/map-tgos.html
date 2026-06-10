@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main}">
+
+<head>
+	<title>TGOS 地圖顯示</title>
+	<th:block layout:fragment="page-css">
+		<link rel="stylesheet" th:href="@{/static/css/pages/map/map-tgos.css}" th:nonce="${cspNonce}">
+	</th:block>
+</head>
+
+<body>
+	<div layout:fragment="page-content">
+
+		<!-- 頁面標題列 -->
+		<div class="page-header">
+			<div class="page-header-info">
+				<h1 class="page-title">TGOS 地圖顯示</h1>
+				<p class="page-subtitle">
+					內政部國土測繪圖資服務雲（TGOS）線上地圖整合範例(TWD97 坐標系統)
+				</p>
+			</div>
+			<div class="page-header-aside">
+				<span class="status-badge status-badge--info">
+					<i class="bi bi-clock me-1"></i> <span id="liveClock"></span>
+				</span>
+			</div>
+		</div>
+		
+		<!-- 地點資訊卡 -->
+		<div class="card-panel mb-4">
+			<div class="card-panel-body">
+				<div
+					class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+					<div>
+						<strong class="fs-5">內政部資訊中心</strong><br> <span
+							class="text-muted">台北市松江路469巷4號</span>
+					</div>
+					<div class="coordinate-info text-end">
+						TWD97 坐標<br> <strong>X: 303895</strong> | <strong>Y:
+							2773227</strong>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="card-panel">
+			<div class="card-panel-header">
+				<div class="card-panel-title">
+					<i class="bi bi-geo-alt-fill text-primary me-2"></i> TGOS 線上地圖
+				</div>
+				<button type="button" class="btn btn-sm btn-outline-primary"
+					id="resetMapBtn">
+					<i class="bi bi-arrow-clockwise"></i> 重置地圖
+				</button>
+			</div>
+			<div class="card-panel-body p-0">
+				<div class="map-container">
+					<div id="OMap"></div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!-- end layout:fragment="page-content" -->
+
+	<th:block layout:fragment="page-js">
+		<!-- TGOS MAP API (lite) -->
+		<script type="text/javascript"
+			src="http://api.tgos.tw/TGOS_API/tgos?ver=2&AppID=x+JLVSx85Lk=&APIKey=in8W74q0ogpcfW/STwicK8D5QwCdddJf05/7nb+OtDh8R99YN3T0LurV4xato3TpL/fOfylvJ9Wv/khZEsXEWxsBmg+GEj4AuokiNXCh14Rei21U5GtJpIkO++Mq3AguFK/ISDEWn4hMzqgrkxNe1Q=="
+			charset="utf-8" th:nonce="${cspNonce}"></script>
+			
+		<script th:src="@{/static/js/pages/map/map-tgos.js}" th:nonce="${cspNonce}"></script>
+	</th:block>
+
+</body>
+</html>

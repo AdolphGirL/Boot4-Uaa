@@ -1,0 +1,238 @@
+/*
+ * topbar.css — 頂部導覽列
+ * 依賴：tokens.css
+ */
+
+/* ═══════════════════════════════════════
+   頂部導覽列容器
+═══════════════════════════════════════ */
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    height: var(--topbar-height);
+    background: var(--topbar-bg);
+    border-bottom: 1px solid var(--topbar-border);
+    box-shadow: var(--topbar-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    flex-shrink: 0;
+}
+
+/* ── 左右區塊 ── */
+.topbar-left,
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+}
+
+/* ── 漢堡按鈕（手機顯示） ── */
+.topbar-hamburger {
+    font-size: 1.3rem;
+}
+@media (min-width: 992px) {
+    .topbar-hamburger { display: none; }
+}
+
+/* ── 通用 Icon 按鈕 ── */
+.topbar-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--color-gray-600);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: .95rem;
+    line-height: 1;
+    transition:
+        color var(--duration-fast),
+        background var(--duration-fast);
+    padding: 0;
+}
+.topbar-icon-btn:hover {
+    color: var(--color-primary-600);
+    background: var(--color-primary-100);
+}
+
+/* ── 麵包屑 ── */
+.topbar-breadcrumb .breadcrumb {
+    font-size: .78rem;
+}
+.topbar-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    color: var(--color-gray-300);
+    padding: 0 .4rem;
+}
+.breadcrumb-home { color: var(--color-gray-500); }
+.breadcrumb-home:hover { color: var(--color-primary-600); }
+.breadcrumb-item.active { color: var(--color-gray-700); }
+
+/* ── 字體大小控制群組 ── */
+.topbar-font-group {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    background: var(--color-gray-100);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    padding: 2px 3px;
+}
+.topbar-font-group .topbar-icon-btn {
+    width: 28px;
+    height: 26px;
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+}
+
+/* ── 分隔線 ── */
+.topbar-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-gray-200);
+    margin: 0 .125rem;
+    flex-shrink: 0;
+}
+
+/* ── 通知按鈕 ── */
+.topbar-notify { position: relative; }
+.topbar-notify-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--color-danger);
+    color: #fff;
+    border-radius: var(--radius-full);
+    font-size: .52rem;
+    min-width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+    border: 2px solid #fff;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+/* ── 使用者按鈕 ── */
+.topbar-user-btn {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    padding: .25rem .5rem;
+    cursor: pointer;
+    color: var(--color-gray-700);
+    font-size: .82rem;
+    transition: all var(--duration-fast);
+}
+.topbar-user-btn::after { display: none; }   /* 移除 BS5 caret */
+.topbar-user-btn:hover,
+.topbar-user-btn.show {
+    background: var(--color-primary-100);
+    border-color: var(--color-primary-200);
+    color: var(--color-primary-700);
+}
+
+/* 頭像縮寫圓 */
+.topbar-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-600);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .72rem;
+    font-weight: var(--font-weight-bold);
+    flex-shrink: 0;
+    letter-spacing: 0;
+}
+
+.topbar-username {
+    font-weight: var(--font-weight-medium);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.topbar-caret {
+    font-size: .6rem;
+    opacity: .6;
+}
+
+/* ── 使用者下拉選單 ── */
+.topbar-dropdown {
+    min-width: 210px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-gray-200);
+    box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    padding: .375rem 0;
+    margin-top: .375rem !important;
+}
+
+.topbar-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .625rem 1rem;
+    font-size: .82rem;
+    pointer-events: none;
+    white-space: normal;
+}
+.topbar-dropdown-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-600);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .82rem;
+    font-weight: var(--font-weight-bold);
+    flex-shrink: 0;
+}
+.topbar-dropdown-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-gray-900);
+    font-size: .84rem;
+}
+.topbar-dropdown-dept {
+    font-size: .72rem;
+    color: var(--color-gray-500);
+}
+
+.topbar-dropdown .dropdown-item {
+    font-size: .81rem;
+    padding: .45rem 1rem;
+    display: flex;
+    align-items: center;
+}
+.topbar-dropdown .dropdown-item:hover {
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
+}
+.dropdown-item--danger { color: var(--color-danger) !important; }
+.dropdown-item--danger:hover {
+    background: var(--color-danger-bg) !important;
+    color: var(--color-danger-text) !important;
+}
+
+/* topbar-dropdown-info — 使用者下拉選單中的資訊區塊 */
+.topbar-dropdown-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}

@@ -1,0 +1,81 @@
+/*
+ * layout.css — 主版面配置骨架
+ * 依賴：tokens.css
+ */
+
+/* ── 版面骨架 ── */
+.app-body {
+    margin: 0;
+    overflow-x: hidden;
+}
+
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 右側主區（sidebar 之外） */
+.app-main {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    margin-left: var(--sidebar-width);
+    transition: margin-left var(--duration-base) var(--ease-base);
+    background: var(--content-bg);
+}
+
+/* 側欄收合時 */
+.app-wrapper.sidebar-collapsed .app-main {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* ── 頁面內容主體 ── */
+.app-content {
+    flex: 1 1 auto;
+    padding: var(--content-padding);
+    overflow-y: auto;
+}
+
+/* ── Footer ── */
+.app-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .6rem var(--content-padding);
+    font-size: .72rem;
+    color: var(--color-gray-400);
+    background: var(--color-white);
+    border-top: 1px solid var(--card-border);
+    flex-shrink: 0;
+}
+.app-footer-version {
+    font-size: .68rem;
+    color: var(--color-gray-300);
+}
+
+/* ── 手機遮罩 ── */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 1039;
+    opacity: 0;
+    transition: opacity var(--duration-base);
+}
+.sidebar-backdrop.is-visible {
+    display: block;
+    opacity: 1;
+}
+
+/* ── 響應式 ── */
+@media (max-width: 991.98px) {
+    .app-main { margin-left: 0 !important; }
+    .app-content { padding: var(--content-padding-sm); }
+}
+
+@media (max-width: 575.98px) {
+    .app-content { padding: .875rem; }
+    .page-header { flex-direction: column; }
+}

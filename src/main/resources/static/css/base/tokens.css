@@ -1,0 +1,143 @@
+/* ========================================================
+   tokens.css — 全站 Design Tokens
+   職責：只定義 CSS 自訂屬性（變數），不包含任何樣式規則
+   基礎重置與通用樣式請見 base.css
+======================================================== */
+
+/* ── 品牌主色（完整色階） ─────────────────────────────── */
+:root {
+	/* Primary 藍色系 */
+	--color-primary-900: #0a2847;
+	--color-primary-800: #0f3460;
+	--color-primary-700: #153f70;
+	--color-primary-600: #1a4f8b; /* 主色 */
+	--color-primary-500: #2062a8;
+	--color-primary-400: #4d89c7;
+	--color-primary-300: #8ab4dd;
+	--color-primary-200: #c4d9ef;
+	--color-primary-100: #e8f0fb;
+	--color-primary-50: #f4f8fd;
+	/* 語意色 */
+	--color-success: #198754;
+	--color-success-bg: #d1fae5;
+	--color-success-text: #065f46;
+	--color-warning: #fd7e14;
+	--color-warning-bg: #fef3c7;
+	--color-warning-text: #92400e;
+	--color-danger: #dc3545;
+	--color-danger-bg: #fee2e2;
+	--color-danger-text: #991b1b;
+	--color-info: #0dcaf0;
+	--color-info-bg: #dbeafe;
+	--color-info-text: #1e40af;
+	/* 輔助色 */
+	--color-teal: #20c997;
+	--color-teal-bg: #d1fae5;
+	--color-amber: #f59e0b;
+	--color-amber-bg: #fef3c7;
+	--color-rose: #e63946;
+	--color-rose-bg: #fee2e2;
+	/* 中性色（灰階） */
+	--color-gray-900: #1a2332;
+	--color-gray-800: #2c3e50;
+	--color-gray-700: #495057;
+	--color-gray-600: #6c757d;
+	--color-gray-500: #868e96;
+	--color-gray-400: #adb5bd;
+	--color-gray-300: #ced4da;
+	--color-gray-200: #e9ecef;
+	--color-gray-100: #f1f3f5;
+	--color-gray-50: #f8f9fa;
+	--color-white: #ffffff;
+	/* ── 元件 Token ──────────────────────────── */
+	/* 側欄 */
+	--sidebar-width: 240px;
+	--sidebar-collapsed-width: 64px;
+	--sidebar-bg: #0f1f3d;
+	--sidebar-bg-hover: rgba(255, 255, 255, .07);
+	--sidebar-bg-active: rgba(255, 255, 255, .13);
+	--sidebar-text: #c4d4e8;
+	--sidebar-text-muted: rgba(196, 212, 232, .45);
+	--sidebar-text-hover: #ffffff;
+	--sidebar-text-active: #ffffff;
+	--sidebar-icon-active: #7eb8f7;
+	--sidebar-border: rgba(255, 255, 255, .07);
+	--sidebar-header-h: 60px;
+	--sidebar-footer-h: 48px;
+	/* 頂部導覽列 */
+	--topbar-height: 60px;
+	--topbar-bg: var(--color-white);
+	--topbar-border: var(--color-gray-200);
+	--topbar-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+	/* 內容區 */
+	--content-bg: #f2f5f9;
+	--content-padding: 1.5rem;
+	--content-padding-sm: 1rem;
+	/* 卡片 */
+	--card-bg: var(--color-white);
+	--card-border: var(--color-gray-200);
+	--card-shadow: 0 1px 6px rgba(0, 0, 0, .06);
+	--card-shadow-hover: 0 4px 16px rgba(0, 0, 0, .10);
+	--card-radius: 10px;
+	/* 字型 */
+	--font-family: 'Noto Sans TC', '微軟正黑體', 'Microsoft JhengHei',
+		-apple-system, BlinkMacSystemFont, sans-serif;
+	--font-size-base: 14px;
+	--font-size-xs: 11px;
+	--font-size-sm: 12px;
+	--font-size-md: 14px;
+	--font-size-lg: 16px;
+	--font-size-xl: 18px;
+	--font-weight-normal: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+	--line-height-base: 1.6;
+	/* 圓角 */
+	--radius-xs: 3px;
+	--radius-sm: 5px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+	--radius-full: 9999px;
+	/* 動畫 */
+	--duration-fast: 120ms;
+	--duration-base: 220ms;
+	--duration-slow: 380ms;
+	--ease-base: ease;
+	--ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+	/* 間距系統 */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	/* 語意別名（推薦元件使用這些） */
+	--color-primary: var(--color-primary-600);
+	--color-primary-dark: var(--color-primary-700);
+	--color-primary-subtle: var(--color-primary-100);
+	--color-primary-border: var(--color-primary-200);
+	--color-surface: var(--color-white);
+	--color-border: var(--color-gray-200);
+	--color-border-light: var(--color-gray-100);
+	--color-text-heading: var(--color-gray-900);
+	--color-text-body: var(--color-gray-800);
+	--color-text-muted: var(--color-gray-600);
+	--color-bg-hover: var(--color-gray-50);
+	--shadow-card: var(--card-shadow);
+	--shadow-card-hover: var(--card-shadow-hover);
+	--transition-base: var(--duration-base) var(--ease-base);
+	--transition-fast: var(--duration-fast) var(--ease-base);
+	--font-family-base: var(--font-family);
+}
+
+/* ════════════════════════════════════════════════════════
+   字體大小步進控制
+   ★ 字體數值只需在上方 :root 的 --font-size-sm/md/lg/xl 修改
+   ════════════════════════════════════════════════════════ */
+html[data-font-step="-1"] { font-size: var(--font-size-sm); }
+html[data-font-step="0"]  { font-size: var(--font-size-md); }
+html[data-font-step="1"]  { font-size: var(--font-size-lg); }
+html[data-font-step="2"]  { font-size: var(--font-size-xl); }
+

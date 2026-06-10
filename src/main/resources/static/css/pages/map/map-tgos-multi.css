@@ -1,0 +1,37 @@
+/* 
+ * map-tgos.css — TGOS 地圖專用樣式
+ * 透過 layouts/main.html 的 layout:fragment="page-css" 載入
+ */
+.map-container {
+	position: relative;
+	width: 100%;
+	height: calc(100vh - 200px);
+	min-height: 520px;
+	border-radius: var(--card-radius);
+	overflow: hidden;
+	border: 1px solid var(--card-border);
+	box-shadow: var(--card-shadow);
+}
+
+#OMap {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+/* 側邊列表樣式 */
+.city-item {
+	padding: 0.85rem 1.25rem;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+	border-left: 4px solid transparent;
+}
+
+.city-item:hover {
+	background: var(--color-bg-hover);
+}
+
+.city-item.active {
+	background: var(--color-primary-50);
+	border-left-color: var(--color-primary);
+	font-weight: var(--font-weight-semibold);
+}

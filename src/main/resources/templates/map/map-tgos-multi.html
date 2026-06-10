@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main}">
+
+<head>
+<title>TGOS 多標記點地圖</title>
+<th:block layout:fragment="page-css">
+	<link rel="stylesheet"
+		th:href="@{/static/css/pages/map/map-tgos-multi.css}">
+</th:block>
+</head>
+
+<body>
+	<div layout:fragment="page-content">
+
+		<!-- 頁面標題列 -->
+		<div class="page-header">
+			<div class="page-header-info">
+				<h1 class="page-title">TGOS 多標記點地圖</h1>
+				<p class="page-subtitle">臺灣五都市政府位置標示（支援側邊點擊定位）(TWD97 坐標系統)</p>
+			</div>
+			<div class="page-header-aside">
+				<span class="status-badge status-badge--info"> <i
+					class="bi bi-clock me-1"></i> <span id="liveClock"></span>
+				</span>
+			</div>
+		</div>
+
+		<!-- 地點資訊卡 -->
+		<div class="row g-3">
+			<!-- 側邊列表 -->
+			<div class="col-lg-4">
+				<div class="card-panel h-100">
+					<div class="card-panel-header">
+						<div class="card-panel-title">
+							<i class="bi bi-list-ul me-2"></i>五都市政府列表
+						</div>
+					</div>
+					<div class="card-panel-body p-0">
+						<div id="cityList" class="list-group list-group-flush"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 地圖區域 -->
+			<div class="col-lg-8">
+				<div class="card-panel">
+					<div class="card-panel-header">
+						<div class="card-panel-title">
+							<i class="bi bi-map-fill text-primary me-2"></i>TGOS 線上地圖
+						</div>
+						<div>
+							<button type="button" class="btn btn-sm btn-outline-primary me-2"
+								id="resetMapBtn">
+								<i class="bi bi-arrow-clockwise"></i> 重置
+							</button>
+							<button type="button" class="btn btn-sm btn-outline-success"
+								id="fitAllBtn">
+								<i class="bi bi-arrows-fullscreen"></i> 顯示全部
+							</button>
+						</div>
+					</div>
+					<div class="card-panel-body p-0">
+						<div class="map-container">
+							<div id="OMap"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!-- end layout:fragment="page-content" -->
+
+	<th:block layout:fragment="page-js">
+		<!-- TGOS MAP API (lite) -->
+		<script type="text/javascript"
+			src="http://api.tgos.tw/TGOS_API/tgos?ver=2&AppID=x+JLVSx85Lk=&APIKey=in8W74q0ogpcfW/STwicK8D5QwCdddJf05/7nb+OtDh8R99YN3T0LurV4xato3TpL/fOfylvJ9Wv/khZEsXEWxsBmg+GEj4AuokiNXCh14Rei21U5GtJpIkO++Mq3AguFK/ISDEWn4hMzqgrkxNe1Q=="
+			charset="utf-8" th:nonce="${cspNonce}"></script>
+
+		<script th:src="@{/static/js/pages/map/map-tgos-multi.js}"
+			th:nonce="${cspNonce}"></script>
+	</th:block>
+
+</body>
+</html>

@@ -1,20 +1,34 @@
 package com.kd.ci.security.config;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,6 +39,11 @@ import com.kd.ci.security.authorization.MenuPrefixAuthorizationManager;
 import com.kd.ci.security.handler.CustomAccessDeniedHandler;
 import com.kd.ci.security.handler.CustomAuthenticationFailureHandler;
 import com.kd.ci.security.handler.CustomLogoutSuccessHandler;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 
 /*** pring Boot 3.x + Spring Security 6 / 7，不建議再寫 @EnableWebSecurity
 @EnableWebSecurity***/
@@ -34,15 +53,17 @@ public class SecurityConfig {
 	private final MenuPrefixAuthorizationManager prefixManager;
 	private final PersonnelUserDetailsService personnelUserDetailsService;
 	private final CustomAccessDeniedHandler accessDeniedHandler;
+	private final CSPNonceFilter cspNonceFilter;
 
 	public SecurityConfig(MenuPrefixAuthorizationManager prefixManager,
 			PersonnelUserDetailsService personnelUserDetailsService, 
-			CustomAccessDeniedHandler accessDeniedHandler) {
+			CustomAccessDeniedHandler accessDeniedHandler, CSPNonceFilter cspNonceFilter) {
 		this.prefixManager = prefixManager;
 		this.personnelUserDetailsService = personnelUserDetailsService;
 		this.accessDeniedHandler = accessDeniedHandler;
+		this.cspNonceFilter = cspNonceFilter;		
 	}
-    
+	
 	/***
 	@Bean
 	AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
@@ -63,8 +84,64 @@ public class SecurityConfig {
 		return new ProviderManager(provider);
 	}
 	
+	/** ==========================================	**/
+	/** 1. 授權伺服器專用 Filter Chain (高優先權)		**/
+	/** ==========================================	**/
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http, CSPNonceFilter cspNonceFilter) throws Exception {
+	@Order(1)
+	SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+		/** Spring Security 7 在啟動時進行了嚴格檢查：如果排在前面的 Filter Chain（@Order(1)）匹配了 any request，
+		 * 那麼排在後面的 Filter Chain（@Order(2)）就永遠不會被觸發，因此直接拋出異常阻止系統啟動。 */
+		
+		/** 💡 關鍵修正：透過這個配置，讓這個 Filter Chain 只處理 OAuth2 / OIDC 相關的 URL */
+		/** 其他網頁、自訂登入頁的請求就會自動「滑落」到第二層去處理！ */
+		/** 💡 透過 Spring Security 7 內建的 Endpoints 匹配器，自動篩選出 OAuth2 相關端點 */
+		
+		/*** 在 Spring Security 7 中，如果您直接透過 new OAuth2AuthorizationServerConfigurer() 實例化一個 Configurer 物件，它的內部狀態（包括端點路徑、預設參數、自訂設定等）此時尚未被初始化（未調用 init 方法）。
+		 * 因此直接調用 authServerConfigurer.getEndpointsMatcher() 就會抓到一個 null 物件，導致請求進來（訪問 /dashboard）在比對 Filter Chain 時直接發生空指標異常。
+		org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer authServerConfigurer =
+				new org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer();***/
+		
+		/***
+		💡 關鍵修正：不從物件中取，直接手動明確定義 OAuth2 伺服器必須攔截的標準端點路徑
+		如此一來，這個 Filter Chain「只會」吃這兩個路徑下的請求，絕對不會和後面的 anyRequest 衝突！***/
+		
+		http
+			.securityMatchers(matchers -> matchers
+				.requestMatchers("/oauth2/**", "/.well-known/**")
+			)
+			// 或者是寫成精簡版：.securityMatcher(new org.springframework.security.web.util.matcher.OrRequestMatcher(
+			//     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/oauth2/**"),
+			//     new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/.well-known/**")
+			// ))
+			/** 2. 套用 Spring Security 7 內建的 OAuth2 授權伺服器配置 */
+			.oauth2AuthorizationServer(authServer -> authServer
+				.oidc(Customizer.withDefaults()) // 啟用 OpenID Connect 1.0 (支援 yml 中的 openid scope)
+			)
+			/** 3. 當未認證使用者觸發 OAuth2 流程時，重導向至您現有的自訂登入頁面 `/login` */
+			.exceptionHandling(exceptions -> exceptions
+				.defaultAuthenticationEntryPointFor(
+					new LoginUrlAuthenticationEntryPoint("/login"),
+					new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+				)
+			)
+			/** 4. 確保 OIDC 用戶資訊端點 (User Info / OIDC 登出) 能夠接受來自前端應用的 Bearer Access Token */
+			.oauth2ResourceServer(resourceServer -> resourceServer
+				.jwt(Customizer.withDefaults())
+			)
+			/** 5. 共享原先的 CORS 跨域設定，允許外來 Client 應用的請求 */
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
+		return http.build();
+	}
+	
+	/** ==========================================	**/
+	/** 2. 原有單體系統 Filter Chain 
+	 * (必須在 Order(1) 之後，攔截不屬於 OAuth2 協議的所有其餘請求)		**/
+	/** ==========================================	**/
+	@Bean
+	@Order(2)
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		
 		http
 			/** 讓 CORS Filter 在 Security Filter 之前執行（preflight OPTIONS 不會被擋） */
@@ -182,6 +259,63 @@ public class SecurityConfig {
 		return http.build();
 	}
 	
+	/** ==========================================	**/
+	/** 3. Getting Started 指南必須定義的必要組件		**/
+	/** ==========================================	**/
+	
+	/**
+	 * 配置用於簽署 JWT (Access Token / ID Token) 的 JWK (Json Web Key) 來源
+	 * 範例採用自動生成的非對稱 RSA 密鑰（生產環境建議改由 KeyStore 讀取固定證書）
+	 * 
+	 * 將 JWKSource<SecurityContext> 改為 JWKSource<com.nimbusds.jose.proc.SecurityContext>
+	 */
+	@Bean 
+	JWKSource<SecurityContext> jwkSource() {
+		KeyPair keyPair = generateRsaKey();
+		RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+		RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+		
+		/** Nimbus 的 RSAKey */
+		RSAKey rsaKey = new RSAKey.Builder(publicKey)
+				.privateKey(privateKey)
+				.keyID(UUID.randomUUID().toString())
+				.build();
+		JWKSet jwkSet = new JWKSet(rsaKey);
+		return new ImmutableJWKSet<>(jwkSet);
+	}
+
+	private static KeyPair generateRsaKey() {
+		KeyPair keyPair;
+		try {
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(2048);
+			keyPair = keyPairGenerator.generateKeyPair();
+		} catch (Exception ex) {
+			throw new IllegalStateException(ex);
+		}
+		return keyPair;
+	}
+
+	/**
+	 * 用於解密與驗證 JWT Token 的 Decoder (由官方提供標準化建立方式)
+	 */
+	@Bean
+	JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+		return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
+	}
+
+	/**
+	 * 配置授權伺服器的基礎端點設定。 它會自動識別並繼承您 yml 中設定的 `server.servlet.context-path: /boot4-uaa`
+	 */
+	@Bean
+	AuthorizationServerSettings authorizationServerSettings() {
+		return AuthorizationServerSettings.builder().build();
+	}
+	
+	/** ==========================================	**/
+	/** 4. 原有的 CORS 與自訂 Handler 配置			**/
+	/** ==========================================	**/
+	
 	/*** 跨域資源共享（CORS）配置，允許來自特定來源的請求，適用於前後端分離架構，
 	 * 如果有需要可改由透過環境變數進行動態讀取Environment；CORS規範處理的是RESPONSE **/
 	@Bean
@@ -234,4 +368,5 @@ public class SecurityConfig {
 	LogoutSuccessHandler customLogoutSuccessHandler() {
 		return new CustomLogoutSuccessHandler();
 	}
+	
 }

@@ -1,0 +1,376 @@
+/*
+ * components.css — 共用 UI 元件
+ * 所有功能頁面皆可使用，透過 layouts/main.html 自動載入
+ * ─────────────────────────────────────────────────
+ * 包含：card-panel、stat-card、status-badge、
+ *        announce-list、chart-legend、page-header、
+ *        DataTable 覆寫
+ */
+
+/* ═══════════════════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════════════════ */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+    margin: 0 0 .2rem;
+    letter-spacing: -.02em;
+}
+
+.page-subtitle {
+    font-size: .82rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   CARD PANEL — 通用內容卡片
+═══════════════════════════════════════════════════ */
+.card-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: box-shadow var(--transition-base);
+}
+.card-panel:hover {
+    box-shadow: var(--shadow-card-hover);
+}
+
+.card-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .875rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    gap: .75rem;
+}
+
+.card-panel-title {
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--color-text-heading);
+    margin: 0;
+    letter-spacing: .01em;
+    display: flex;
+    align-items: center;
+}
+
+.card-panel-body {
+    padding: 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   STAT CARD — 統計摘要卡片
+═══════════════════════════════════════════════════ */
+.stat-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: 1.125rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+/* 色彩變體 */
+.stat-card--blue  .stat-card-icon { background: #dbeafe; color: #1d4ed8; }
+.stat-card--teal  .stat-card-icon { background: #d1fae5; color: #047857; }
+.stat-card--amber .stat-card-icon { background: #fef3c7; color: #b45309; }
+.stat-card--rose  .stat-card-icon { background: #fee2e2; color: #b91c1c; }
+
+.stat-card-body { min-width: 0; flex: 1; }
+
+.stat-card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+    line-height: 1.2;
+    letter-spacing: -.02em;
+}
+
+.stat-card-label {
+    font-size: .75rem;
+    color: var(--color-text-muted);
+    margin-top: .15rem;
+}
+
+.stat-card-trend {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: .72rem;
+    font-weight: 500;
+    margin-top: .3rem;
+}
+.trend--up     { color: var(--color-success); }
+.trend--down   { color: var(--color-danger); }
+.trend--neutral { color: var(--color-text-muted); }
+
+/* ═══════════════════════════════════════════════════
+   STATUS BADGE — 狀態標籤
+═══════════════════════════════════════════════════ */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    white-space: nowrap;
+}
+.status-badge--success { background: #d1fae5; color: #065f46; }
+.status-badge--warning { background: #fef3c7; color: #92400e; }
+.status-badge--danger  { background: #fee2e2; color: #991b1b; }
+.status-badge--info    { background: #dbeafe; color: #1e40af; }
+.status-badge--secondary { background: #f1f3f5; color: #495057; }
+
+/* ═══════════════════════════════════════════════════
+   ANNOUNCE LIST — 公告清單
+═══════════════════════════════════════════════════ */
+.announce-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.announce-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .75rem 1.25rem;
+    border-bottom: 1px solid var(--color-border-light);
+    transition: background var(--transition-fast);
+}
+.announce-item:last-child { border-bottom: none; }
+.announce-item:hover { background: var(--color-bg-hover); }
+
+.announce-tag {
+    flex-shrink: 0;
+    margin-top: 2px;
+    padding: 1px 7px;
+    border-radius: var(--radius-sm);
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+}
+.announce-tag--danger    { background: #fee2e2; color: #991b1b; }
+.announce-tag--info      { background: #dbeafe; color: #1e40af; }
+.announce-tag--secondary { background: #f1f3f5; color: #495057; }
+
+.announce-title {
+    font-size: .82rem;
+    color: var(--color-text-body);
+    text-decoration: none;
+    display: block;
+    line-height: 1.4;
+}
+.announce-title:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+.announce-date {
+    font-size: .7rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════
+   CHART LEGEND
+═══════════════════════════════════════════════════ */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem .75rem;
+    justify-content: center;
+}
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .73rem;
+    color: var(--color-text-muted);
+}
+.chart-legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.topbar-clock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary-border);
+    border-radius: var(--radius-full);
+    padding: .3rem .85rem;
+    font-size: .78rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .03em;
+}
+
+/* ═══════════════════════════════════════════════════
+   DATATABLE 全域覆寫
+═══════════════════════════════════════════════════ */
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label,
+.dataTables_wrapper .dataTables_info {
+    font-size: .78rem;
+    color: var(--color-text-muted);
+}
+
+.dataTables_wrapper .dataTables_filter input.form-control {
+    font-size: .78rem;
+    height: 32px;
+    padding: .2rem .6rem;
+}
+
+.dataTables_wrapper .dataTables_length select.form-select {
+    font-size: .78rem;
+    height: 32px;
+    padding: .2rem 1.75rem .2rem .5rem;
+}
+
+table.dataTable thead th {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid var(--color-border) !important;
+    white-space: nowrap;
+}
+
+table.dataTable tbody tr:hover td {
+    background-color: var(--color-bg-hover);
+}
+
+table.dataTable tbody td {
+    font-size: .82rem;
+    vertical-align: middle;
+    border-color: var(--color-border-light);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    font-size: .78rem !important;
+    padding: .25rem .5rem !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   FORM 共用輔助
+═══════════════════════════════════════════════════ */
+.form-label-required::after {
+    content: ' *';
+    color: var(--color-danger);
+}
+
+/* jQuery POST 結果訊息 */
+.ajax-result {
+    display: none;
+    margin-top: .75rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   UTIL
+═══════════════════════════════════════════════════ */
+.text-primary  { color: var(--color-primary)  !important; }
+.text-teal     { color: #20c997 !important; }
+.text-amber    { color: #fd7e14 !important; }
+.text-rose     { color: #e63946 !important; }
+.text-success  { color: var(--color-success) !important; }
+.text-danger   { color: var(--color-danger)  !important; }
+.text-muted    { color: var(--color-text-muted) !important; }
+
+.gap-xs { gap: .25rem; }
+.gap-sm { gap: .5rem;  }
+.gap-md { gap: 1rem;   }
+
+/* ═══════════════════════════════════════════════════
+   ERROR PAGE — 錯誤頁（403 / 500）替換 inline style
+═══════════════════════════════════════════════════ */
+.error-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-page-icon {
+    font-size: 5rem;
+    color: var(--color-gray-300);
+    margin-bottom: 1rem;
+    line-height: 1;
+}
+
+.error-page-code {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--color-gray-200);
+    margin: 0;
+    line-height: 1;
+}
+
+.error-page-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin: .5rem 0 1rem;
+}
+
+.error-page-desc {
+    max-width: 440px;
+    font-size: .85rem;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+}
+
+.error-page-actions {
+    display: flex;
+    gap: .5rem;
+    margin-top: 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST CONTAINER — 替換 inline z-index
+═══════════════════════════════════════════════════ */
+.gov-toast-container {
+    z-index: 9999;
+}

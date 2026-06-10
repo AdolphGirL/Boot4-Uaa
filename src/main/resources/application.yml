@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 9000
   http2:
     enabled: true
   compression:
@@ -57,7 +57,7 @@ spring:
     oauth2:
       authorizationserver:
         client:
-          oidc-client:
+          oidc-client:    # 註冊的 Client ID，這裡是 oidc-client，為自訂名稱，且可以多組，參考authorizationserver.client原始碼
             registration:
               client-id: "oidc-client"
               client-secret: "{noop}secret"
@@ -67,9 +67,13 @@ spring:
                 - "authorization_code"
                 - "refresh_token"
               redirect-uris:
-                - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
+# Client 從 127.0.0.1 跳轉到 localhost 登入成功後，再跳轉回 127.0.0.1 時，因為 same-site: lax 的限制，有時會導致 OIDC 登出（post-logout-redirect-uris）或某些跨站跳轉的 Session 遺失
+#                - "http://127.0.0.1:8080/boot4/oauth2/code/oidc-client"，
+                - "http://localhost:8080/boot4/oauth2/code/oidc-client"
+# 當使用者在 Authorization Server 執行登出時，授權伺服器會把使用者重新導向到 Client(指定的登出頁面)，這個 URI 必須是 Client 應用真正會處理登出的地址。
+# 目的是讓 Client 也能同步清除自己的 Session（例如清除本地 Cookie、JWT 等），達成「單點登出」的效果。
               post-logout-redirect-uris:
-                - "http://127.0.0.1:8080/"
+                - "http://localhost:8080/boot4/logout"
               scopes:
                 - "openid"
                 - "profile"

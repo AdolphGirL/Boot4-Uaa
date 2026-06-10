@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="政府公務人員管理資訊系統" />
+	
+	<!--/* 快取設定 */-->
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+
+	<!--
+	Spring Security CSRF — app.js 從這裡讀取 Token，
+	自動附加到所有 jQuery Ajax 請求的 Header 中
+	-->
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	<meta name="_csrf_parameter" th:content="${_csrf.parameterName}">
+
+	<!--
+		layout:title-pattern 會將子頁的 <title> 內容拼入此處
+		格式：子頁標題 | 公務管理系統
+	-->
+	<title layout:title-pattern="$CONTENT_TITLE | 公務管理系統">公務管理系統</title>
+
+	<!-- ── WebJars CSS (webjars-locator-core 自動解析版本) ── -->
+	<link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}">
+	
+	<!--/*  
+	<link rel="stylesheet"
+		th:href="@{/webjars/datatables/css/dataTables.bootstrap5.min.css}" />*/-->
+
+	<!--/* ── 系統基礎 CSS ── */-->
+	<link rel="stylesheet" th:href="@{/css/base/tokens.css}">
+	<link rel="stylesheet" th:href="@{/css/base/base.css}">
+	<link rel="stylesheet" th:href="@{/css/layout/layout.css}">
+	<link rel="stylesheet" th:href="@{/css/layout/sidebar.css}">
+	<link rel="stylesheet" th:href="@{/css/layout/topbar.css}">
+	<link rel="stylesheet" th:href="@{/css/components/components.css}">
+	
+	<!--
+		layout:fragment="page-css"
+		子頁面可在此插入專屬 CSS，不需要的頁面不宣告此 fragment 即可
+	-->
+	<th:block layout:fragment="page-css"></th:block>
+</head>
+<body class="app-body" id="appBody" th:attr="data-current-url=${currentUrl}">
+	
+	<div class="app-wrapper" id="appWrapper">
+
+		<!-- ════════════════════════════════
+		LEFT: SIDEBAR
+		════════════════════════════════ -->
+		<aside class="app-sidebar" id="appSidebar" aria-label="主選單">
+
+			<!-- Sidebar Header -->
+			<div class="sidebar-header">
+				<a th:href="@{/dashboard}" class="sidebar-brand" aria-label="回首頁">
+					<span class="sidebar-brand-icon"> 
+						<i class="bi bi-building-fill-gear"></i>
+					</span>
+					<span class="sidebar-brand-text">公務管理系統</span>
+				</a>
+				<button type="button" id="sidebarCollapseBtn"
+					class="sidebar-collapse-btn" aria-label="收合側欄" title="收合選單">
+					<i class="bi bi-layout-sidebar-reverse"></i>
+				</button>
+			</div>
+			
+			<!-- Sidebar Nav -->
+			<!--
+	          menuTree   : List<MenuTree>  — 由 MenuModelInterceptor 注入
+	          currentUrl : String          — 目前請求路徑
+	
+	          MenuTree 介面方法：
+	            .id           BigDecimal
+	            .title        String   顯示名稱
+	            .url          String   目標路徑（空 = 資料夾）
+	            .children     List<MenuTree>
+	            .hasChildren()  boolean
+	            .isFolder()     boolean（url 為 null/空）
+	            .isActive(url)  boolean（遞迴判斷子孫）
+	        -->
+			<nav class="sidebar-nav" id="sidebarNav" aria-label="功能選單">
+
+				<!-- ── 有選單 ── -->
+				<ul class="sidebar-menu"
+					th:if="${menuTree != null and not #lists.isEmpty(menuTree)}">
+
+					<!-- ════ Level 1 ════ -->
+					<li th:each="lv1 : ${menuTree}"
+						th:with="lv1Active=${lv1.isActive(currentUrl)}"
+						th:class="'sidebar-menu-item'
+                              + (${lv1.hasChildren()} ? ' has-sub' : '')
+                              + (${lv1Active}         ? ' is-active' : '')">
+
+						<!--
+                      有子節點 → <a href="#"> 展開/收合（data-target 對應子 ul id）
+                      isFolder() 也是無 URL，同樣使用此分支
+                    --> <a th:if="${lv1.hasChildren()}" href="#"
+						class="sidebar-link sidebar-link--parent"
+						th:attr="data-target='sub-' + ${lv1.id},
+                                aria-expanded=${lv1Active} ? 'true' : 'false',
+                                title=${lv1.title}"
+						role="button"> <i class="sidebar-link-icon bi bi-grid-fill"></i>
+							<span class="sidebar-link-label" th:text="${lv1.title}">選單</span>
+							<i class="sidebar-link-arrow bi bi-chevron-down"></i>
+					</a> <!-- 無子節點 + 有 URL → 直接連結 --> <a th:unless="${lv1.hasChildren()}"
+						class="sidebar-link"
+						th:href="${not #strings.isEmpty(lv1.url)} ? ${lv1.url} : '#'"
+						th:classappend="${lv1Active} ? ' is-active' : ''"
+						th:attr="title=${lv1.title}"> <i
+							class="sidebar-link-icon bi bi-grid-fill"></i> <span
+							class="sidebar-link-label" th:text="${lv1.title}">選單</span>
+					</a> <!-- ════ Level 2 ════ -->
+						<ul th:if="${lv1.hasChildren()}" class="sidebar-submenu"
+							th:id="'sub-' + ${lv1.id}"
+							th:classappend="${lv1Active} ? ' is-expanded' : ''">
+
+							<li th:each="lv2 : ${lv1.children}"
+								th:with="lv2Active=${lv2.isActive(currentUrl)}"
+								th:class="'sidebar-menu-item'
+                                      + (${lv2.hasChildren()} ? ' has-sub' : '')
+                                      + (${lv2Active}         ? ' is-active' : '')">
+
+								<!-- 有子節點 → 展開按鈕 --> <a th:if="${lv2.hasChildren()}" href="#"
+								class="sidebar-link sidebar-link--parent sidebar-link--lv2"
+								th:attr="data-target='sub-' + ${lv2.id},
+                                        aria-expanded=${lv2Active} ? 'true' : 'false',
+                                        title=${lv2.title}"
+								role="button"> <i
+									class="sidebar-link-icon bi bi-chevron-right"></i> <span
+									class="sidebar-link-label" th:text="${lv2.title}">子選單</span> <i
+									class="sidebar-link-arrow bi bi-chevron-down"></i>
+							</a> <!-- 無子節點 → 直接連結 --> <a th:unless="${lv2.hasChildren()}"
+								class="sidebar-link sidebar-link--lv2"
+								th:href="${not #strings.isEmpty(lv2.url)} ? ${lv2.url} : '#'"
+								th:classappend="${lv2Active} ? ' is-active' : ''"
+								th:attr="title=${lv2.title}"> <i
+									class="sidebar-link-icon bi bi-chevron-right"></i> <span
+									class="sidebar-link-label" th:text="${lv2.title}">子選單</span>
+							</a> <!-- ════ Level 3 ════ -->
+								<ul th:if="${lv2.hasChildren()}"
+									class="sidebar-submenu sidebar-submenu--lv3"
+									th:id="'sub-' + ${lv2.id}"
+									th:classappend="${lv2Active} ? ' is-expanded' : ''">
+
+									<li th:each="lv3 : ${lv2.children}"
+										th:with="lv3Active=${lv3.isActive(currentUrl)}"
+										th:class="'sidebar-menu-item' + (${lv3Active} ? ' is-active' : '')">
+
+										<a class="sidebar-link sidebar-link--lv3"
+										th:href="${not #strings.isEmpty(lv3.url)} ? ${lv3.url} : '#'"
+										th:classappend="${lv3Active} ? ' is-active' : ''"
+										th:attr="title=${lv3.title}"> <i
+											class="sidebar-link-icon bi bi-dot"></i> <span
+											class="sidebar-link-label" th:text="${lv3.title}">項目</span>
+									</a>
+
+									</li>
+
+								</ul>
+								<!-- /Level 3 -->
+							</li>
+						</ul>
+						<!-- /Level 2 -->
+					</li>
+				</ul>
+				<!-- /Level 1 -->
+
+				<!-- ── 無選單權限 ── -->
+				<div
+					th:unless="${menuTree != null and not #lists.isEmpty(menuTree)}"
+					class="sidebar-empty">
+					<i class="bi bi-info-circle"></i> <span>尚無功能權限</span>
+				</div>
+
+			</nav>
+
+			<!-- Sidebar Footer -->
+			<div class="sidebar-footer">
+				<i class="bi bi-shield-check text-success"></i> <span
+					class="sidebar-footer-text">v1.0.0</span>
+			</div>
+		</aside>
+
+		<!-- ════════════════════════════════
+		RIGHT: MAIN CONTENT
+		════════════════════════════════ -->
+		<div class="app-main" id="appMain">
+
+			<!-- ── TOP NAV BAR ── -->
+			<header class="app-topbar" id="appTopbar">
+				<div class="topbar-left">
+					<!-- 手機漢堡 / 桌面側欄開關 -->
+					<button type="button" id="sidebarToggleBtn"
+						class="topbar-icon-btn topbar-hamburger" aria-label="開啟選單">
+						<i class="bi bi-list"></i>
+					</button>
+
+					<!-- 麵包屑路徑 -->
+					<nav aria-label="目前位置" class="topbar-breadcrumb d-none d-md-flex">
+						<ol class="breadcrumb mb-0 align-items-center">
+							<li class="breadcrumb-item"><a th:href="@{/dashboard}"
+								class="breadcrumb-home"> <i class="bi bi-house-fill"></i>
+							</a></li>
+							<!-- 動態麵包屑由各頁面 Controller 注入 breadcrumbs -->
+							<th:block
+								th:if="${breadcrumbs != null and not #lists.isEmpty(breadcrumbs)}">
+								<li th:each="crumb, st : ${breadcrumbs}"
+									th:class="'breadcrumb-item' + (${st.last} ? ' active' : '')">
+									<a th:unless="${st.last}" th:href="${crumb.url}"
+									th:text="${crumb.label}">上層</a> <span th:if="${st.last}"
+									th:text="${crumb.label}" aria-current="page">目前頁</span>
+								</li>
+							</th:block>
+							<!-- 無麵包屑時顯示頁面標題 -->
+							<li
+								th:unless="${breadcrumbs != null and not #lists.isEmpty(breadcrumbs)}"
+								class="breadcrumb-item active"><span
+								th:text="${pageTitle ?: '首頁'}">首頁</span></li>
+						</ol>
+					</nav>
+				</div>
+
+				<div class="topbar-right">
+					<!-- 字體大小控制 -->
+					<div class="topbar-font-group" role="group" aria-label="字體大小">
+						<button type="button" id="fontDecrease" class="topbar-icon-btn"
+							title="縮小字體">
+							<i class="bi bi-type-h3"></i>
+						</button>
+						<button type="button" id="fontReset" class="topbar-icon-btn"
+							title="還原字體">
+							<i class="bi bi-type"></i>
+						</button>
+						<button type="button" id="fontIncrease" class="topbar-icon-btn"
+							title="放大字體">
+							<i class="bi bi-type-h1"></i>
+						</button>
+					</div>
+
+					<div class="topbar-divider" aria-hidden="true"></div>
+
+					<!-- 通知 -->
+					<button type="button" class="topbar-icon-btn topbar-notify"
+						title="通知">
+						<i class="bi bi-bell"></i> <span class="topbar-notify-badge"
+							aria-label="3 則未讀通知">3</span>
+					</button>
+
+					<div class="topbar-divider" aria-hidden="true"></div>
+
+					<!-- 使用者下拉選單 -->
+					<div class="dropdown">
+						<button type="button" class="topbar-user-btn dropdown-toggle"
+							data-bs-toggle="dropdown" aria-expanded="false"
+							aria-haspopup="true">
+							<!-- 頭像縮寫由 JS 產生 -->
+							<span class="topbar-avatar" id="topbarAvatar"
+								th:attr="data-name=${currentName ?: ''}"> </span> 
+							<span
+								class="topbar-username d-none d-lg-inline"
+								th:text="${currentName ?: '使用者'}">使用者</span> 
+								<i class="bi bi-chevron-down topbar-caret d-none d-lg-inline"></i>
+						</button>
+
+						<ul class="dropdown-menu dropdown-menu-end topbar-dropdown">
+							<!-- 使用者資訊頭 -->
+							<li class="topbar-dropdown-header">
+								<div class="topbar-dropdown-avatar" id="dropdownAvatar"></div>
+								<div class="topbar-dropdown-info">
+									<div class="topbar-dropdown-name"
+										th:text="${currentName ?: '使用者'}">使用者</div>
+									<div class="topbar-dropdown-dept text-muted"
+										th:text="${currentUnit ?: ''}">部門</div>
+								</div>
+							</li>
+							<li><hr class="dropdown-divider my-1" /></li>
+							<li><a class="dropdown-item" th:href="@{/profile}"> <i
+									class="bi bi-person-circle me-2"></i>個人資料
+							</a></li>
+							<li><a class="dropdown-item" th:href="@{/change-password}">
+									<i class="bi bi-key me-2"></i>變更密碼
+							</a></li>
+							<li><hr class="dropdown-divider my-1" /></li>
+							<!--/*  
+							<li><a class="dropdown-item dropdown-item--danger"
+								th:href="@{/logout}" onclick="return confirm('確定要登出系統嗎？')">
+									<i class="bi bi-box-arrow-right me-2"></i>登出系統
+							</a></li>*/-->
+
+							<li>
+								<form th:action="@{/logout}" method="post" id="logoutForm">
+									<a href="#" id="logoutLink"
+										class="dropdown-item dropdown-item--danger"> <i
+										class="bi bi-box-arrow-right me-2"></i>登出系統
+									</a>
+								</form>
+							</li>
+
+						</ul>
+					</div>
+				</div>
+			</header>
+
+			<!-- ── PAGE CONTENT (由子頁注入) ── -->
+			<main class="app-content" id="appContent" role="main">
+				<!--/*
+				layout:fragment="page-content"
+				這是子頁面注入內容的插入點
+				每個功能頁面 layout:decorate="~{layouts/main}" 後，
+				在 layout:fragment="page-content" 區塊填入自己的 HTML
+				*/-->
+				<div layout:fragment="page-content">
+					<!-- 預設內容（通常不會顯示） -->
+				</div>
+			</main>
+
+			<!-- ── FOOTER ── -->
+			<footer class="app-footer">
+				<span>© <span th:text="${#dates.year(#dates.createNow())}">2025</span>
+					公務人員管理資訊系統
+				</span> <span class="app-footer-version">v1.0.0</span>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 手機側欄遮罩 -->
+	<div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+	<!-- ── WebJars JS ── -->
+	<script th:src="@{/webjars/jquery/jquery.min.js}" th:nonce="${cspNonce}"></script>
+	<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}" th:nonce="${cspNonce}"></script>
+	
+	<!--/*
+	<script th:src="@{/webjars/datatables/js/dataTables.min.js}"></script>
+	<script th:src="@{/webjars/datatables/js/dataTables.bootstrap5.min.js}"></script>  */-->
+
+	<!-- ── 系統核心 JS 模組 ── -->
+	<!--
+	sidebar.js    — 側欄展開/收合、手風琴選單、手機響應
+	topbar.js     — 字體控制、使用者頭像縮寫
+	datatables.js — DataTable 全域預設（繁中語系、共用設定）
+	app.js        — 系統初始化入口，按序載入上述模組
+	-->
+	
+	<script th:src="@{/js/modules/sidebar.js}" th:nonce="${cspNonce}"></script>
+	<script th:src="@{/js/modules/topbar.js}" th:nonce="${cspNonce}"></script>
+	<script th:src="@{/js/modules/datatables.js}" th:nonce="${cspNonce}"></script>
+	<script th:src="@{/js/modules/dialog.js}" th:nonce="${cspNonce}"></script>
+	<script th:src="@{/js/modules/logout.js}" th:nonce="${cspNonce}"></script>
+	<script th:src="@{/js/app.js}" th:nonce="${cspNonce}"></script>
+
+	<!--
+	layout:fragment="page-js"
+	子頁面在此插入專屬 JS（DataTable 初始化、Chart.js 等）
+	放在 app.js 之後，確保 jQuery / Bootstrap 已載入
+	-->
+	<th:block layout:fragment="page-js"></th:block>
+
+	<!-- ── Toast 通知容器（由 app.js Gov.Toast 使用）── -->
+	<div id="govToastContainer"
+		class="toast-container position-fixed bottom-0 end-0 p-3 gov-toast-container"
+		aria-live="polite" aria-atomic="true"></div>
+		
+</body>
+</html>

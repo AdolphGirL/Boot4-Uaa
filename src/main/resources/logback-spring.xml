@@ -108,7 +108,7 @@
 		
 		<!-- 不使用 safeMsg，避免遞迴 -->
 		<encoder>
-			<pattern>[TS] %d{yyyy-MM-dd HH:mm:ss.SSS} [TH] %thread [LV] %-5level [CL] %logger{40}.%M [LN] %L [TR] %X{trace_id}/%X{span_id} - %msg%n"</pattern>
+			<pattern>[TS] %d{yyyy-MM-dd HH:mm:ss.SSS} [TH] %thread [LV] %-5level [CL] %logger{40}.%M [LN] %L [TR] %X{traceId:-}/%X{spanId:-} - %msg%n</pattern>
 		</encoder>
 	</appender>
 	
@@ -117,8 +117,17 @@
 		<appender-ref ref="SECURITY_APPENDER" />
 	</logger>
 	
-	<!-- 開發階段使用，紀錄 spring security -->
+	<!-- 開發階段使用，紀錄 spring security，有需要時到寫到LOG -->
 	<logger name="org.springframework.security" level="trace" additivity="false">
+		<appender-ref ref="CONSOLE" />
+	</logger>
+	
+	<!-- 開發階段使用，OAuth2，有需要時到寫到LOG-->
+	<logger name="org.springframework.security.oauth2" level="TRACE" additivity="false">
+		<appender-ref ref="CONSOLE" />
+	</logger>
+	
+	<logger name="com.nimbusds" level="DEBUG" additivity="false">
 		<appender-ref ref="CONSOLE" />
 	</logger>
 	

@@ -1,0 +1,338 @@
+/*
+ * sidebar.css — 左側功能選單（1-3 層，可縮放）
+ * 依賴：tokens.css, layout.css
+ */
+
+/* ═══════════════════════════════════════
+   側欄容器
+═══════════════════════════════════════ */
+.app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1040;
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 2px 0 16px rgba(0,0,0,.18);
+    transition:
+        width var(--duration-base) var(--ease-base),
+        transform var(--duration-base) var(--ease-base);
+}
+
+/* 收合狀態（桌面） */
+.app-wrapper.sidebar-collapsed .app-sidebar {
+    width: var(--sidebar-collapsed-width);
+}
+
+/* 手機隱藏（預設） */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width) !important;
+    }
+    .app-sidebar.is-open {
+        transform: translateX(0);
+    }
+}
+
+/* ═══════════════════════════════════════
+   Sidebar Header
+═══════════════════════════════════════ */
+.sidebar-header {
+    height: var(--sidebar-header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .625rem 0 1rem;
+    border-bottom: 1px solid var(--sidebar-border);
+    flex-shrink: 0;
+}
+
+/* 品牌 Logo */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    text-decoration: none;
+    overflow: hidden;
+    min-width: 0;
+    flex: 1;
+}
+
+.sidebar-brand-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.1);
+    border-radius: var(--radius-md);
+    font-size: 1.1rem;
+    color: #fff;
+    transition: background var(--duration-fast);
+}
+.sidebar-brand:hover .sidebar-brand-icon {
+    background: rgba(255,255,255,.18);
+}
+
+.sidebar-brand-text {
+    font-size: .8rem;
+    font-weight: var(--font-weight-bold);
+    color: #fff;
+    letter-spacing: .04em;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition:
+        opacity var(--duration-base),
+        max-width var(--duration-base);
+    max-width: 160px;
+}
+
+/* 收合時隱藏文字 */
+.app-wrapper.sidebar-collapsed .sidebar-brand-text {
+    opacity: 0;
+    max-width: 0;
+}
+
+/* 收合按鈕 */
+.sidebar-collapse-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--sidebar-text-muted);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition:
+        color var(--duration-fast),
+        background var(--duration-fast);
+}
+.sidebar-collapse-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,.1);
+}
+
+/* ═══════════════════════════════════════
+   Sidebar Nav — 捲動容器
+═══════════════════════════════════════ */
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: .375rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.08) transparent;
+}
+.sidebar-nav::-webkit-scrollbar        { width: 3px; }
+.sidebar-nav::-webkit-scrollbar-thumb  { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+/* ═══════════════════════════════════════
+   選單清單基礎
+═══════════════════════════════════════ */
+.sidebar-menu,
+.sidebar-submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ═══════════════════════════════════════
+   Level 1 選單項目
+═══════════════════════════════════════ */
+.sidebar-menu-item {
+    margin: 1px .5rem;
+}
+
+/* ── 所有層次的連結基礎 ── */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    padding: .55rem .75rem;
+    border-radius: var(--radius-md);
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: .81rem;
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        background var(--duration-fast),
+        color var(--duration-fast);
+    outline: none;
+    position: relative;
+}
+
+.sidebar-link:hover,
+.sidebar-link:focus-visible {
+    background: var(--sidebar-bg-hover);
+    color: var(--sidebar-text-hover);
+    text-decoration: none;
+}
+
+/* 目前頁面高亮 */
+.sidebar-link.is-active,
+.sidebar-menu-item.is-active > .sidebar-link {
+    background: var(--sidebar-bg-active);
+    color: var(--sidebar-text-active);
+    font-weight: var(--font-weight-semibold);
+}
+.sidebar-menu-item.is-active > .sidebar-link .sidebar-link-icon {
+    color: var(--sidebar-icon-active);
+}
+
+/* ── Icon ── */
+.sidebar-link-icon {
+    flex-shrink: 0;
+    width: 18px;
+    font-size: .95rem;
+    text-align: center;
+    transition: color var(--duration-fast);
+}
+
+/* ── Label ── */
+.sidebar-link-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity var(--duration-base), max-width var(--duration-base);
+    max-width: 160px;
+}
+
+/* ── 展開箭頭 ── */
+.sidebar-link-arrow {
+    flex-shrink: 0;
+    font-size: .62rem;
+    margin-left: auto;
+    transition:
+        transform var(--duration-base),
+        opacity var(--duration-base);
+}
+.sidebar-link--parent[aria-expanded="true"] .sidebar-link-arrow {
+    transform: rotate(180deg);
+}
+
+/* 收合時隱藏文字、箭頭 */
+.app-wrapper.sidebar-collapsed .sidebar-link-label,
+.app-wrapper.sidebar-collapsed .sidebar-link-arrow {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+}
+
+/* 收合時連結置中 */
+.app-wrapper.sidebar-collapsed .sidebar-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* 收合時隱藏子選單 */
+.app-wrapper.sidebar-collapsed .sidebar-submenu {
+    display: none;
+}
+
+/* ═══════════════════════════════════════
+   子選單（Level 2 & 3）— 手風琴展開
+═══════════════════════════════════════ */
+.sidebar-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--duration-slow) var(--ease-base);
+}
+.sidebar-submenu.is-expanded {
+    max-height: 800px;   /* 足夠大即可 */
+}
+
+/* Level 2 */
+.sidebar-menu-item .sidebar-menu-item {
+    margin: 1px 0 1px .25rem;
+}
+.sidebar-link--lv2 {
+    padding-left: 2rem;
+    font-size: .79rem;
+    font-weight: var(--font-weight-normal);
+    color: rgba(196,212,232,.75);
+}
+.sidebar-link--lv2:hover {
+    color: var(--sidebar-text-hover);
+    background: rgba(255,255,255,.05);
+}
+.sidebar-link--lv2.is-active { color: #fff; }
+.sidebar-link--lv2 .sidebar-link-icon {
+    font-size: .8rem;
+    color: rgba(196,212,232,.4);
+}
+
+/* Level 3 */
+.sidebar-submenu--lv3 .sidebar-menu-item {
+    margin-left: .25rem;
+}
+.sidebar-link--lv3 {
+    padding-left: 3rem;
+    font-size: .76rem;
+    color: rgba(196,212,232,.55);
+}
+.sidebar-link--lv3:hover {
+    color: var(--sidebar-text-hover);
+    background: rgba(255,255,255,.04);
+}
+.sidebar-link--lv3.is-active { color: #fff; }
+.sidebar-link--lv3 .sidebar-link-icon { font-size: .55rem; }
+
+/* ═══════════════════════════════════════
+   無選單提示
+═══════════════════════════════════════ */
+.sidebar-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    padding: 2.5rem 1rem;
+    color: var(--sidebar-text-muted);
+    font-size: .78rem;
+    text-align: center;
+}
+
+/* ═══════════════════════════════════════
+   Sidebar Footer
+═══════════════════════════════════════ */
+.sidebar-footer {
+    height: var(--sidebar-footer-h);
+    border-top: 1px solid var(--sidebar-border);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: .5rem;
+    flex-shrink: 0;
+    font-size: .7rem;
+}
+.sidebar-footer-text {
+    color: var(--sidebar-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity var(--duration-base), max-width var(--duration-base);
+    max-width: 100px;
+}
+.app-wrapper.sidebar-collapsed .sidebar-footer-text {
+    opacity: 0;
+    max-width: 0;
+}
+
+/* ═══════════════════════════════════════
+   收合時 Tooltip（title 屬性原生）
+═══════════════════════════════════════ */
+.app-wrapper.sidebar-collapsed .sidebar-link[title] {
+    /* 利用原生 title tooltip，無需額外 JS */
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main}">
+<head>
+<title>系統錯誤</title>
+</head>
+<body>
+	<div layout:fragment="page-content">
+		<div class="error-page">
+			<div class="error-page-icon">
+				<i class="bi bi-exclamation-triangle"></i>
+			</div>
+			<h1 class="error-page-code">500</h1>
+			<h2 class="error-page-title">系統發生錯誤</h2>
+			<p class="error-page-desc"
+				th:text="${errorMessage ?: '系統發生非預期錯誤，請稍後再試。若問題持續發生，請洽系統管理員並提供操作時間與畫面。'}"></p>
+			<div class="error-page-actions">
+				<a th:href="@{/dashboard}" class="btn btn-primary btn-sm"> <i
+					class="bi bi-house me-1"></i>回首頁
+				</a>
+				<button onclick="location.reload()"
+					class="btn btn-outline-secondary btn-sm">
+					<i class="bi bi-arrow-clockwise me-1"></i>重新整理
+				</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/main}">
+
+<head>
+	<title>首頁儀表板</title>
+	<th:block layout:fragment="page-css">
+		<link rel="stylesheet" th:href="@{/css/pages/dashboard/dashboard.css}">
+	</th:block>
+</head>
+
+<body>
+	<div layout:fragment="page-content">
+
+		<!-- 頁面標題列 -->
+		<div class="page-header">
+			<div class="page-header-info">
+				<h1 class="page-title">儀表板</h1>
+				<p class="page-subtitle">
+					歡迎回來，<strong th:text="${currentName ?: '使用者'}"></strong>，
+					今天是 <span
+						th:text="${#temporals.format(#temporals.createNow(), 'yyyy 年 MM 月 dd 日 EEEE')}"></span>
+				</p>
+			</div>
+			<div class="page-header-aside">
+				<div class="topbar-clock-badge">
+					<i class="bi bi-clock me-1"></i> <span id="liveClock"></span>
+				</div>
+			</div>
+		</div>
+
+		<!-- ── 統計卡片列 ── -->
+		<div class="row g-3 mb-4">
+			<div class="col-6 col-xl-3">
+				<div class="stat-card stat-card--blue">
+					<div class="stat-card-icon">
+						<i class="bi bi-people-fill"></i>
+					</div>
+					<div class="stat-card-body">
+						<div class="stat-card-value" th:text="${statTotalStaff}">1,248</div>
+						<div class="stat-card-label">在職人員總數</div>
+						<div class="stat-card-trend trend--up">
+							<i class="bi bi-arrow-up-short"></i>較上月 +12
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-6 col-xl-3">
+				<div class="stat-card stat-card--teal">
+					<div class="stat-card-icon">
+						<i class="bi bi-folder2-open"></i>
+					</div>
+					<div class="stat-card-body">
+						<div class="stat-card-value" th:text="${statPendingCases}">87</div>
+						<div class="stat-card-label">本月待辦案件</div>
+						<div class="stat-card-trend trend--up">
+							<i class="bi bi-arrow-up-short"></i>較上月 +5
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-6 col-xl-3">
+				<div class="stat-card stat-card--amber">
+					<div class="stat-card-icon">
+						<i class="bi bi-calendar-check-fill"></i>
+					</div>
+					<div class="stat-card-body">
+						<div class="stat-card-value" th:text="${statTodaySigned}">34</div>
+						<div class="stat-card-label">今日簽核</div>
+						<div class="stat-card-trend trend--neutral">
+							<i class="bi bi-check2-circle"></i>進度正常
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-6 col-xl-3">
+				<div class="stat-card stat-card--rose">
+					<div class="stat-card-icon">
+						<i class="bi bi-exclamation-triangle-fill"></i>
+					</div>
+					<div class="stat-card-body">
+						<div class="stat-card-value" th:text="${statOverdueCases}">6</div>
+						<div class="stat-card-label">逾期未結案件</div>
+						<div class="stat-card-trend trend--down">
+							<i class="bi bi-arrow-down-short"></i>較上週 -2
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ── 圖表區 ── -->
+		<div class="row g-3 mb-4">
+			<!-- 月度長條圖 -->
+			<div class="col-12 col-xl-8">
+				<div class="card-panel h-100">
+					<div class="card-panel-header">
+						<h5 class="card-panel-title">
+							<i class="bi bi-bar-chart-fill text-primary me-2"></i>月度案件統計
+						</h5>
+						<select class="form-select form-select-sm w-auto" id="chartYear">
+							<option>2025 年</option>
+							<option>2024 年</option>
+						</select>
+					</div>
+					<div class="card-panel-body">
+						<canvas id="monthlyChart" class="dashboard-chart-bar"></canvas>
+					</div>
+				</div>
+			</div>
+
+			<!-- 類別圓環圖 -->
+			<div class="col-12 col-xl-4">
+				<div class="card-panel h-100">
+					<div class="card-panel-header">
+						<h5 class="card-panel-title">
+							<i class="bi bi-pie-chart-fill text-teal me-2"></i>案件類別
+						</h5>
+					</div>
+					<div
+						class="card-panel-body d-flex flex-column align-items-center justify-content-center gap-3">
+						<canvas id="categoryChart" class="dashboard-chart-donut"></canvas>
+						<div id="categoryLegend" class="chart-legend"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- ── 簽核紀錄 & 公告 ── -->
+		<div class="row g-3">
+			<!-- 最近簽核 DataTable -->
+			<div class="col-12 col-xl-7">
+				<div class="card-panel">
+					<div class="card-panel-header">
+						<h5 class="card-panel-title">
+							<i class="bi bi-clock-history text-amber me-2"></i>最近簽核紀錄
+						</h5>
+						<a href="#" class="btn btn-sm btn-outline-secondary">查看全部</a>
+					</div>
+					<div class="card-panel-body p-0">
+						<div class="table-responsive">
+							<table id="recentTable"
+								class="table table-hover table-sm align-middle mb-0 w-100">
+								<thead class="table-light">
+									<tr>
+										<th>案件編號</th>
+										<th>案件名稱</th>
+										<th>簽核人員</th>
+										<th>狀態</th>
+										<th>日期</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>C-2025-0312</code></td>
+										<td>年度考績評核作業</td>
+										<td>王志明</td>
+										<td><span class="status-badge status-badge--success">已核准</span></td>
+										<td>2025/03/12</td>
+									</tr>
+									<tr>
+										<td><code>C-2025-0311</code></td>
+										<td>出差申請單</td>
+										<td>林佳玲</td>
+										<td><span class="status-badge status-badge--warning">審核中</span></td>
+										<td>2025/03/11</td>
+									</tr>
+									<tr>
+										<td><code>C-2025-0309</code></td>
+										<td>採購申請表</td>
+										<td>陳建宏</td>
+										<td><span class="status-badge status-badge--danger">退回</span></td>
+										<td>2025/03/09</td>
+									</tr>
+									<tr>
+										<td><code>C-2025-0308</code></td>
+										<td>人員調動申請</td>
+										<td>李淑芬</td>
+										<td><span class="status-badge status-badge--success">已核准</span></td>
+										<td>2025/03/08</td>
+									</tr>
+									<tr>
+										<td><code>C-2025-0307</code></td>
+										<td>教育訓練計畫</td>
+										<td>張文雄</td>
+										<td><span class="status-badge status-badge--info">草稿</span></td>
+										<td>2025/03/07</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 系統公告 -->
+			<div class="col-12 col-xl-5">
+				<div class="card-panel">
+					<div class="card-panel-header">
+						<h5 class="card-panel-title">
+							<i class="bi bi-megaphone-fill text-rose me-2"></i>系統公告
+						</h5>
+						<a href="#" class="btn btn-sm btn-outline-secondary">全部公告</a>
+					</div>
+					<div class="card-panel-body p-0">
+						<ul class="announce-list">
+							<li class="announce-item"><span
+								class="announce-tag announce-tag--danger">重要</span>
+								<div>
+									<a href="#" class="announce-title">114年度考績評核作業開始受理</a>
+									<div class="announce-date">2025/03/10</div>
+								</div></li>
+							<li class="announce-item"><span
+								class="announce-tag announce-tag--info">公告</span>
+								<div>
+									<a href="#" class="announce-title">系統例行維護通知（3/15 凌晨 2-4 時）</a>
+									<div class="announce-date">2025/03/08</div>
+								</div></li>
+							<li class="announce-item"><span
+								class="announce-tag announce-tag--info">公告</span>
+								<div>
+									<a href="#" class="announce-title">新版電子簽核系統上線通知</a>
+									<div class="announce-date">2025/03/05</div>
+								</div></li>
+							<li class="announce-item"><span
+								class="announce-tag announce-tag--secondary">一般</span>
+								<div>
+									<a href="#" class="announce-title">114年度教育訓練課程報名開始</a>
+									<div class="announce-date">2025/03/01</div>
+								</div></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<!-- end layout:fragment="page-content" -->
+
+	<th:block layout:fragment="page-js">
+		<script
+			th:src="@{https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js}" th:nonce="${cspNonce}"></script>
+			
+		<script th:src="@{/js/pages/dashboard/dashboard.js}" th:nonce="${cspNonce}"></script>
+	</th:block>
+
+</body>
+</html>

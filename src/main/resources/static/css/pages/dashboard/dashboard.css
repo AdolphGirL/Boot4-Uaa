@@ -1,0 +1,56 @@
+/* 
+ * dashboard.css — 儀表板專屬樣式
+ * 透過 layouts/main.html 的 layout:fragment="page-css" 載入
+ * 
+ * 依賴：tokens.css + base.css + components.css（包含 stat-card、card-panel）
+ * 此檔案只放置儀表板特有的版面與細節調整
+ */
+.dashboard-charts-row {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--space-4); /* 使用 tokens 的間距系統 */
+}
+
+@media (min-width : 1200px) {
+	.dashboard-charts-row {
+		grid-template-columns: 2fr 1fr; /* 改為更直觀的比例 2:1，原 8:4 等同於此 */
+		/* 如果想維持更精確的比例，也可繼續使用 8fr 4fr */
+	}
+}
+
+/* Chart 容器固定尺寸（取代原本的 inline style） */
+.dashboard-chart-container {
+	position: relative;
+	width: 100%;
+}
+
+.dashboard-chart-bar {
+	height: 220px;
+	width: 100%;
+}
+
+.dashboard-chart-donut {
+	max-height: 180px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+/* DataTable 寬度處理（建議未來改用 utility class） */
+.table-full-width {
+	width: 100% !important;
+}
+
+/* 
+ * 保留舊的 .table.w-100 相容性（如果現有 HTML 已經大量使用）
+ * 建議逐步替換成 .table-full-width
+ */
+.table.w-100 {
+	width: 100% !important;
+}
+
+/* ── 儀表板專屬小調整 ── */
+.dashboard-welcome {
+	margin-bottom: var(--space-5);
+}
+
+/* 如果未來有更多儀表板特有區塊，可以繼續加在這裡 */

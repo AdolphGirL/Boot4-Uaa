@@ -1,0 +1,26 @@
+/* 
+ * map-tgos.css — TGOS 地圖專用樣式
+ * 透過 layouts/main.html 的 layout:fragment="page-css" 載入
+ */
+.map-container {
+	position: relative;
+	width: 100%;
+	height: calc(100vh - 185px);
+	min-height: 500px;
+	border-radius: var(--card-radius);
+	overflow: hidden;
+	border: 1px solid var(--card-border);
+	box-shadow: var(--card-shadow);
+	background: var(--card-bg);
+}
+
+#OMap {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.coordinate-info {
+	font-family: var(--font-family-mono, monospace);
+	font-size: 0.85rem;
+	color: var(--color-text-muted);
+}
